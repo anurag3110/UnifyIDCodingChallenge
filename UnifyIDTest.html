@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UnifyIDTest</title>
+</head>
+<body>
+
+<image id='image'></image>
+
+<script>
+    fetch('https://www.random.org/integers/?num=10000&min=0&max=10000&col=1&base=10&format=plain&rnd=new')
+        .then((httpResponse) => httpResponse.text())
+        .then(httpResponse => httpResponse.toString())
+        .then(httpResponse => {
+            httpResponse = httpResponse.split('\n');
+            let canvasWidth = 128;
+            let canvasHeight = 128;
+            let bitmapBuffer = new Uint8ClampedArray(canvasWidth * canvasHeight * 4);
+            let y = 0;
+
+            while (y < canvasHeight) {
+                let x = 0;
+                while (x < canvasWidth) {
+                    let position = 4 * (x + y * canvasWidth);
+                    bitmapBuffer[position] = httpResponse[x * y] % 255;
+                    bitmapBuffer[position + 1] = (Math.floor(httpResponse[x * y] / 2)) % 255;
+                    bitmapBuffer[position + 2] = (Math.floor(httpResponse[x * y] / 3)) % 255;
+                    bitmapBuffer[position + 3] = (Math.floor(httpResponse[x * y] / 4)) % 255;
+                    ++x;
+                }
+                ++y;
+            }
+
+
+            let canvasElement = document.createElement('canvas')
+            let canvasWith2DContext = canvasElement.getContext('2d');
+            canvasElement.width = 128;
+            canvasElement.height = 128;
+            let bitmapImageData = canvasWith2DContext.createImageData(canvasWidth, canvasHeight);
+            bitmapImageData.data.set(bitmapBuffer);
+            canvasWith2DContext.putImageData(bitmapImageData, 0, 0);
+            document.querySelector('#image').src = canvasElement.toDataURL();
+        })
+        .catch(error => {
+            console.log(error)
+        })
+</script>
+
+
+</body>
+</html>
